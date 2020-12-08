@@ -1,0 +1,155 @@
+<!-- This is a static file -->
+<!-- served from your routes in server.js -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A cool thing made with Glitch">
+
+    <title>Welcome to Glitch!</title>
+
+    <link id="favicon" rel="icon" href="https://glitch.com/edit/favicon-app.ico" type="image/x-icon">
+    <!-- import the webpage's stylesheet -->
+    <link rel="stylesheet" href="/style.css">
+
+    <!-- import the webpage's client-side javascript file -->
+    <script src="/script.js" defer></script>
+  </head>
+ <body>
+    <h1>Sign up</h1>
+    <div><span>Username</span> <input id="signup-name" /></div>
+    <div><span>Password</span> <input id="signup-password" /></div>
+    <div><button id="signup-button">Sign up!</button></div>
+
+    <h1>Log in</h1>
+    <div><span>Username</span> <input id="login-name" /></div>
+    <div><span>Password</span> <input id="login-password" /></div>
+    <div><button id="login-button">Log in!</button></div>
+
+    <h1>Chat (you need to signup and then login first)</h1>
+    <div><span>Channel name</span> <input id="room-name" value="default-room" /><button id="create-channel">Create Channel</button></div>
+    <div><span>Chat message</span> <input id="chat-message" /><button id="submit-message">Submit</button></div>
+ 
+    <div><button id="update-button">Update chat room</button></div>
+    <ul id="messages"></ul>
+
+    <script>
+
+        let actualUsername = undefined
+
+
+
+        let signupUsername = document.getElementById("signup-name")
+        let signupPassword = document.getElementById("signup-password")
+        let signupSubmit = document.getElementById("signup-button")
+        let roomName = document.getElementById("room-name")
+        
+        
+        let processSignupBody = body => {
+            let parsed = JSON.parse(body)
+            if (parsed.success) {
+                alert("Signup successful")
+
+            } else {
+                alert("Signup not successful. Reason: " + parsed.reason)
+            }
+        }
+
+        let processSignupResponse = response => {
+            response.text().then(processSignupBody)
+        }
+
+        signupSubmit.addEventListener('click', () => {
+            fetch("/signup", {
+                method: "POST",
+                body: JSON.stringify({
+                    username: signupUsername.value,
+                    password: signupPassword.value
+                }),
+
+            }).then(processSignupResponse)
+
+        })
+
+
+
+        let loginUsername = document.getElementById("login-name")
+        let loginPassword = document.getElementById("login-password")
+        let loginSubmit = document.getElementById("login-button")
+
+        let processLoginBody = body => {
+            let parsed = JSON.parse(body)
+            if (parsed.success) {
+                actualUsername = loginUsername.value
+                alert("login successful")
+            } else {
+                alert("login not successful. Reason: " + parsed.reason)
+            }
+        }
+
+        let processLoginResponse = response => {
+            response.text().then(processLoginBody)
+        }
+
+        loginSubmit.addEventListener('click', () => {
+            fetch("/login", {
+                method: "POST",
+                body: JSON.stringify({
+                    username: loginUsername.value,
+                    password: loginPassword.value
+                }),
+
+            }).then(processLoginResponse)
+
+        })
+
+      createChannelButton.addEvenetListener
+      
+
+        let messageInput = document.getElementById("chat-message")
+        let sendMessageButton = document.getElementById("submit-message")
+
+        sendMessageButton.addEventListener('click', () => {
+            if (actualUsername === undefined) {
+                alert("You need to login first")
+                return
+            }
+            fetch("/add-message", {
+                method: "POST",
+                body: JSON.stringify(actualUsername + ": " + messageInput.value)
+            })
+        })
+
+
+
+        let chatMessages = document.getElementById("messages")
+
+
+        let processUpdateBody = body => {
+            let parsed = JSON.parse(body)
+            chatMessages.innerHTML = ""
+            for (let i = 0; i < parsed.length; i++) {
+                let item = parsed[i]
+                let domNode = document.createElement("li")
+                domNode.innerText = item
+                chatMessages.appendChild(domNode)
+            }
+        }
+        let processUpdateResponse = response => {
+            response.text().then(processUpdateBody)
+        }
+
+        let updateButton = document.getElementById("update-button")
+        updateButton.addEventListener('click', () => {
+            if (actualUsername === undefined) {
+                alert("You need to login first")
+                return
+            }
+            fetch("/msgs").then(processUpdateResponse)
+
+        })
+    </script>
+</body>
+</html>
