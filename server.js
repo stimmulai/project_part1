@@ -441,6 +441,8 @@ app.post("/ban", (req, res) => {
   res.send(JSON.stringify({success: true}))
 })
 
+app.listen(process.env.PORT || 3000)
+
 app.listen(4000, () => {
     console.log("server started")
 })
